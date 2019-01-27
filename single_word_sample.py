@@ -1,20 +1,17 @@
-#Written by Alex I. Ramirez @alexram1313
-#arcompware.com
 import re
 import wave
 import pyaudio
-import _thread
+import thread
 import time
 
 class TextToSpeech:
-    
-    CHUNK = 1024
+    CHUNK = 2048
 
-    def __init__(self, words_pron_dict:str = 'cmudict-0.7b.txt'):
+    def __init__(self, words_pron_dict = 'cmudict-0.7b.txt'):
         self._l = {}
-        self._load_words(words_pron_dict)
+        self.load_words(words_pron_dict)
 
-    def _load_words(self, words_pron_dict:str):
+    def load_words(self, words_pron_dict):
         with open(words_pron_dict, 'r') as file:
             for line in file:
                 if not line.startswith(';;;'):
@@ -29,25 +26,29 @@ class TextToSpeech:
         print(list_pron)
         delay=0
         for pron in list_pron:
-            _thread.start_new_thread( TextToSpeech._play_audio, (pron,delay,))
+            a = audio();
+            a.play_audio(pron, 0)
+            #thread.start_new_thread( a.play_audio, (pron, delay))
             delay += 0.145
-    
-    def _play_audio(sound, delay):
+
+
+class audio:
+    def play_audio(self, sound, delay):
         try:
             time.sleep(delay)
-            wf = wave.open("sounds/"+sound+".wav", 'rb')
+            wf = wave.open("new_sounds/"+sound+".wav", 'rb')
             p = pyaudio.PyAudio()
             stream = p.open(format=p.get_format_from_width(wf.getsampwidth()),
                             channels=wf.getnchannels(),
                             rate=wf.getframerate(),
                             output=True)
-            
             data = wf.readframes(TextToSpeech.CHUNK)
-            
+            data = wf.readframes(TextToSpeech.CHUNK)
+            data = wf.readframes(TextToSpeech.CHUNK)
+            data = wf.readframes(TextToSpeech.CHUNK)
             while data:
                 stream.write(data)
                 data = wf.readframes(TextToSpeech.CHUNK)
-        
             stream.stop_stream()
             stream.close()
 
@@ -55,11 +56,9 @@ class TextToSpeech:
             return
         except:
             pass
-    
- 
- 
+
 
 if __name__ == '__main__':
     tts = TextToSpeech()
     while True:
-        tts.get_pronunciation(input('Enter a word or phrase: '))
+        tts.get_pronunciation(raw_input('Enter a word or phrase: '))
